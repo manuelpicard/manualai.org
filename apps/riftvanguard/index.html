@@ -301,6 +301,16 @@
       border-radius: 6px;
       font-size: 0.82rem;
     }
+    /* Respect the system setting "reduce motion" */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -600,6 +610,9 @@
       var creeps = [];
       var slashes = [];
       var particles = [];
+      // Respect the system setting "reduce motion": skip decorative hit/spark effects.
+      // The game loop, movement and timers keep running unchanged.
+      var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
       // Enemy send definitions
       var CREEP_SENDS = {
@@ -938,7 +951,7 @@
         });
 
         // Particles
-        particles.forEach(function(p) {
+        if (!reduceMotion.matches) particles.forEach(function(p) {
           ctx.save();
           ctx.beginPath();
           ctx.arc(p.x, p.y, 5 * p.life, 0, Math.PI * 2);
