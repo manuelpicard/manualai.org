@@ -323,6 +323,16 @@
     }
     .btn-action:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .btn-action:active { transform: scale(0.98); }
+    /* Respect the system setting "reduce motion" */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -413,6 +423,17 @@
       var fishes = [];
       var lilies = [];
       var particles = [];
+      // Respect the system setting "reduce motion": no swimming fish, no ripples
+      var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+      var pondFrame = null;
+      function schedulePond() {
+        if (pondFrame === null) {
+          pondFrame = requestAnimationFrame(function () { pondFrame = null; animatePond(); });
+        }
+      }
+      if (reduceMotion.addEventListener) {
+        reduceMotion.addEventListener('change', schedulePond);
+      }
 
       function resizeCanvas() {
         var rect = canvas.getBoundingClientRect();
@@ -420,7 +441,10 @@
         canvas.height = rect.height;
       }
       resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('resize', function () {
+        resizeCanvas();
+        if (reduceMotion.matches) schedulePond(); // static frame must be redrawn after resize
+      });
 
       // Initialize Pond Fauna
       for (var i = 0; i < 4; i++) {
@@ -443,7 +467,7 @@
       }
 
       function addRipple(x, y) {
-        ripples.push({ x: x, y: y, r: 4, maxR: 70, alpha: 0.8 });
+        if (!reduceMotion.matches) ripples.push({ x: x, y: y, r: 4, maxR: 70, alpha: 0.8 });
         playTone(340 + Math.random() * 120, 'sine', 0.2);
       }
 
@@ -482,9 +506,11 @@
 
         // Draw Fishes
         fishes.forEach(function (f) {
-          f.x += Math.cos(f.angle) * f.speed;
-          f.y += Math.sin(f.angle) * f.speed;
-          f.angle += (Math.random() - 0.5) * 0.06;
+          if (!reduceMotion.matches) {
+            f.x += Math.cos(f.angle) * f.speed;
+            f.y += Math.sin(f.angle) * f.speed;
+            f.angle += (Math.random() - 0.5) * 0.06;
+          }
 
           if (f.x < 20) { f.x = 20; f.angle = Math.PI - f.angle; }
           if (f.x > canvas.width - 20) { f.x = canvas.width - 20; f.angle = Math.PI - f.angle; }
@@ -523,7 +549,7 @@
           }
         });
 
-        requestAnimationFrame(animatePond);
+        if (!reduceMotion.matches) schedulePond();
       }
       animatePond();
 
