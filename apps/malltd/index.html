@@ -247,6 +247,16 @@
       color: var(--amber);
       font-size: 0.9rem;
     }
+    /* Respect the system setting "reduce motion" */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -465,6 +475,9 @@
       var shoppers = [];
       var projectiles = [];
       var particles = [];
+      // Respect the system setting "reduce motion": skip decorative hit/spark effects.
+      // The game loop, movement and timers keep running unchanged.
+      var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
       var currentWave = 1;
       var maxWaves = 12;
@@ -803,7 +816,7 @@
         });
 
         // Particles
-        particles.forEach(function(pt) {
+        if (!reduceMotion.matches) particles.forEach(function(pt) {
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, 6 * pt.life, 0, Math.PI * 2);
           ctx.fillStyle = pt.color;
