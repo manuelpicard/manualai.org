@@ -292,6 +292,16 @@
       border-radius: 6px;
       font-size: 0.8rem;
     }
+    /* Respect the system setting "reduce motion" */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -540,6 +550,9 @@
       ];
 
       var particles = [];
+      // Respect the system setting "reduce motion": skip decorative hit/spark effects.
+      // The game loop, movement and timers keep running unchanged.
+      var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
       var dispScore = document.getElementById('dispScore');
       var dispGold = document.getElementById('dispGold');
@@ -830,7 +843,7 @@
         ctx.fillRect(hero.x - 16, hero.y - 24, 32 * hPct, 4);
 
         // Particles
-        particles.forEach(function(p) {
+        if (!reduceMotion.matches) particles.forEach(function(p) {
           ctx.beginPath();
           ctx.arc(p.x, p.y, 5 * p.life, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
