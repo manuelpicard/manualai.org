@@ -405,6 +405,16 @@
       font-family: monospace;
       color: var(--accent);
     }
+    /* Respect the system setting "reduce motion" */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -722,6 +732,9 @@
       var creeps = [];
       var projectiles = [];
       var particles = [];
+      // Respect the system setting "reduce motion": skip decorative hit/spark effects.
+      // The game loop, movement and timers keep running unchanged.
+      var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
       // UI Display Elements
       var dispWave = document.getElementById('dispWave');
@@ -1113,7 +1126,7 @@
         ctx.stroke();
 
         // Core pulsating ring
-        var pulse = (Math.sin(performance.now() * 0.004) + 1) * 4;
+        var pulse = reduceMotion.matches ? 4 : (Math.sin(performance.now() * 0.004) + 1) * 4;
         ctx.beginPath();
         ctx.arc(coreX, coreY, coreRadius + pulse, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
@@ -1180,7 +1193,7 @@
         });
 
         // Particles
-        particles.forEach(function(pt) {
+        if (!reduceMotion.matches) particles.forEach(function(pt) {
           ctx.save();
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, 6 * pt.life, 0, Math.PI * 2);
