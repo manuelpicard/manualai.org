@@ -10,7 +10,7 @@
     "test": "node --test apps/test/*.test.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.36.0",
+    "@anthropic-ai/sdk": "^1.7.0",
     "express": "^5.2.1"
   }
 }
